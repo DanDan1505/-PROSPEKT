@@ -1,0 +1,19 @@
+# Core numeric and table tools
+numpy
+pandas
+
+# Geospatial raster/vector processing
+rasterio
+geopandas
+shapely
+pyproj
+
+# Machine learning models and evaluation
+scikit-learn
+xgboost
+
+# Plotting and visual checks
+matplotlib
+
+# Google Earth Engine Python client for satellite data access
+earthengine-api

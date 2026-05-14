@@ -1,0 +1,14 @@
+{
+  "region_name": "tarkwa_ghana",
+  "description": "Small study area around Tarkwa, Ghana, in the Ashanti/Western gold belt.",
+  "center": {
+    "longitude": -1.9936,
+    "latitude": 5.3018
+  },
+  "bbox": {
+    "min_longitude": -2.10,
+    "min_latitude": 5.20,
+    "max_longitude": -1.88,
+    "max_latitude": 5.40
+  }
+}
