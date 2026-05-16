@@ -29,7 +29,7 @@ Completed:
 
 Next:
 
-- Phase 2: Build the Flask web dashboard.
+- Phase 2 Step 2: Load Phase 1 outputs into SQLite.
 
 ## Project Structure
 
@@ -444,3 +444,293 @@ outputs/maps/tarkwa_final_zone_scores.geojson
 outputs/maps/tarkwa_random_forest_prospectivity.tif
 outputs/figures/feature_importance_comparison.png
 ```
+
+## Phase 2 Web Dashboard
+
+Phase 2 is in progress.
+
+Completed:
+
+- Step 1: Set up Flask app structure with an app factory and main blueprint.
+- Step 2: Loaded Phase 1 output files into SQLite.
+- Step 3: Rendered an interactive Leaflet.js map with color-coded zones.
+- Step 4: Added a zone log table and selected-zone detail panel.
+- Step 5: Added a plain-language query interface for filtering zones.
+- Step 6: Added a threshold alert system for high-confidence zones.
+- Step 7: Added offline-safe dashboard assets and map fallback behavior.
+
+Next:
+
+- Phase 3: Build the Arduino-based ground sensor node.
+
+### Step 1: Flask App Structure
+
+Dashboard files:
+
+```text
+dashboard/run.py
+dashboard/prospekt_dashboard/__init__.py
+dashboard/prospekt_dashboard/main/routes.py
+dashboard/prospekt_dashboard/templates/base.html
+dashboard/prospekt_dashboard/templates/index.html
+dashboard/prospekt_dashboard/static/css/styles.css
+```
+
+Run the dashboard from the project root:
+
+```powershell
+python dashboard\run.py
+```
+
+Keep that terminal open while using the dashboard, then open:
+
+```text
+http://127.0.0.1:5000/
+```
+
+The app uses the Flask app factory pattern:
+
+```text
+create_app()
+```
+
+This keeps the app easier to grow as we add SQLite, map routes, query routes,
+and alert routes.
+
+Typography:
+
+```text
+Instrument Serif  Dashboard brand and display headings
+IBM Plex Mono      Labels, status pills, metadata, and future data controls
+System sans        Body text for readability
+```
+
+The dashboard currently loads these fonts from Google Fonts. Before the offline
+demo step, the font files should be bundled locally.
+
+### Step 2: Load Outputs Into SQLite
+
+The SQLite loader script is:
+
+```text
+scripts/load_outputs_to_sqlite.py
+```
+
+Run:
+
+```powershell
+python scripts\load_outputs_to_sqlite.py
+```
+
+Input files:
+
+```text
+outputs/scores/tarkwa_final_zone_scores.csv
+outputs/maps/tarkwa_final_zone_scores.geojson
+outputs/maps/tarkwa_random_forest_prospectivity.tif
+```
+
+Output database:
+
+```text
+dashboard/prospekt.db
+```
+
+Tables:
+
+```text
+zones
+raster_metadata
+```
+
+Current database contents:
+
+```text
+700 zones
+159 high confidence zones
+18 medium confidence zones
+523 low confidence zones
+```
+
+The dashboard database helper lives in:
+
+```text
+dashboard/prospekt_dashboard/database.py
+```
+
+### Step 3: Leaflet Prospectivity Map
+
+The dashboard now exposes zone data as GeoJSON:
+
+```text
+/api/zones
+```
+
+Frontend files:
+
+```text
+dashboard/prospekt_dashboard/templates/index.html
+dashboard/prospekt_dashboard/static/js/map.js
+dashboard/prospekt_dashboard/static/css/styles.css
+```
+
+Map colors:
+
+```text
+red     prospectivity_score > 70
+yellow  prospectivity_score >= 40 and <= 70
+green   prospectivity_score < 40
+```
+
+Each zone popup currently shows:
+
+```text
+zone_id
+confidence_class
+prospectivity_score
+random_forest_score
+xgboost_score
+prediction_status
+```
+
+The map is centered on Tarkwa, Ghana:
+
+```text
+latitude:  5.3
+longitude: -2.0
+```
+
+The map currently loads Leaflet and OpenStreetMap tiles from the internet.
+Before the offline demo step, Leaflet files and offline basemap tiles should be
+bundled locally or replaced with a local fallback layer.
+
+### Step 4: Zone Log And Details
+
+The dashboard now includes:
+
+```text
+Selected-zone detail panel
+Highest-confidence zone log table
+Click map zone to inspect details
+Click table row to locate the zone on the map
+```
+
+The SQLite loader now stores feature values needed for zone explanation:
+
+```text
+ndvi_mean
+iron_oxide_index_mean
+clay_mineral_index_mean
+elevation_mean
+slope_degrees_mean
+```
+
+The selected-zone panel shows:
+
+```text
+coordinates
+confidence score
+satellite date range
+prediction status
+top driver features
+```
+
+Top drivers are ranked from normalized feature signals, with NDVI interpreted
+as low vegetation exposure because exposed ground is easier to inspect from
+satellite imagery.
+
+### Step 5: Plain-Language Query Interface
+
+The dashboard now includes a local rule-based query interface above the map.
+It does not call an online AI API, so the filtering logic can still work
+offline once map assets are bundled locally.
+
+Example queries:
+
+```text
+show zones with high iron oxide near Tarkwa
+high confidence zones with steep slope
+medium confidence clay zones
+show exposed low vegetation zones
+```
+
+Recognized query ideas:
+
+```text
+high confidence        prospectivity_score > 70
+medium confidence      prospectivity_score between 40 and 70
+low confidence         prospectivity_score < 40
+iron                   top 25% iron oxide index
+clay                   top 25% clay mineral index
+slope or steep         top 25% slope
+vegetation or exposed  bottom 25% NDVI
+near Tarkwa            close to 5.3 latitude, -2.0 longitude
+```
+
+The filtered result updates:
+
+```text
+map polygons
+zone log table
+selected-zone detail panel
+query result summary
+```
+
+### Step 6: Threshold Alerts
+
+The dashboard now includes a threshold alert panel. The default threshold is:
+
+```text
+70%
+```
+
+At the default threshold, the current data flags:
+
+```text
+159 zones
+```
+
+The alert system updates:
+
+```text
+map polygon outlines
+alert summary count
+alert log table
+```
+
+Changing the threshold also respects any active plain-language query. For
+example, if the map is filtered to zones near Tarkwa, the alert count only
+applies to the currently filtered result.
+
+### Step 7: Offline Demo Readiness
+
+Leaflet is now bundled locally:
+
+```text
+dashboard/prospekt_dashboard/static/vendor/leaflet/leaflet.css
+dashboard/prospekt_dashboard/static/vendor/leaflet/leaflet.js
+dashboard/prospekt_dashboard/static/vendor/leaflet/marker-icon.png
+dashboard/prospekt_dashboard/static/vendor/leaflet/marker-icon-2x.png
+dashboard/prospekt_dashboard/static/vendor/leaflet/marker-shadow.png
+```
+
+The dashboard no longer depends on CDN Leaflet files.
+
+Offline behavior:
+
+```text
+Zone polygons load from local SQLite
+Plain-language filtering works locally
+Threshold alerts work locally
+Zone log and selected-zone details work locally
+Leaflet JavaScript and CSS load locally
+```
+
+Online behavior:
+
+```text
+OpenStreetMap tiles load when internet is available
+```
+
+If internet is unavailable, the map falls back to a local neutral background
+while keeping all zone polygons and dashboard controls usable.

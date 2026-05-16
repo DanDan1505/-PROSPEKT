@@ -17,3 +17,6 @@ matplotlib
 
 # Google Earth Engine Python client for satellite data access
 earthengine-api
+
+# Phase 2 web dashboard
+Flask
