@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}PROSPEKT Dashboard{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+{% endblock %}
+
+{% block content %}
+  <section class="dashboard-grid">
+    <div class="panel">
+      <p class="panel-label">Study Area</p>
+      <h2>Tarkwa, Ghana</h2>
+      <p>Satellite-predicted prospectivity zones from Sentinel-2 and SRTM data.</p>
+    </div>
+
+    <div class="panel">
+      <p class="panel-label">Current Model</p>
+      <h2>Random Forest</h2>
+      <p>Selected for the map because it performed best in Phase 1 testing.</p>
+    </div>
+
+    <div class="panel">
+      <p class="panel-label">Next Build Step</p>
+      <h2>Offline Demo</h2>
+      <p>Map libraries, fonts, and basemap assets will be prepared for venue use.</p>
+    </div>
+  </section>
+
+  <section class="map-section">
+    <div class="section-header">
+      <div>
+        <p class="panel-label">Prospectivity Map</p>
+        <h2>Satellite-Predicted Zones</h2>
+      </div>
+      <div class="legend" aria-label="Map legend">
+        <span><i class="legend-swatch high"></i>High</span>
+        <span><i class="legend-swatch medium"></i>Medium</span>
+        <span><i class="legend-swatch low"></i>Low</span>
+      </div>
+    </div>
+    <p id="map-mode-note" class="map-mode-note">Using local dashboard assets. Online basemap loads when internet is available.</p>
+
+    <form id="query-form" class="query-bar">
+      <label for="query-input">Plain-language query</label>
+      <div class="query-controls">
+        <input
+          id="query-input"
+          name="query"
+          type="text"
+          autocomplete="off"
+          placeholder="show zones with high iron oxide near Tarkwa"
+        >
+        <button type="submit">Filter</button>
+        <button id="query-reset" type="button">Reset</button>
+      </div>
+      <p id="query-summary">Showing all satellite-predicted zones.</p>
+    </form>
+
+    <section class="alert-panel" aria-label="Threshold alerts">
+      <div>
+        <p class="panel-label">Threshold Alert</p>
+        <h3>Flag High-Confidence Zones</h3>
+      </div>
+      <div class="threshold-control">
+        <label for="threshold-input">Minimum confidence</label>
+        <input id="threshold-input" type="number" min="0" max="100" step="1" value="70">
+        <span>%</span>
+      </div>
+      <p id="alert-summary">Alerts will appear after zone data loads.</p>
+    </section>
+
+    <div class="map-workspace">
+      <div id="map" class="map" aria-label="Interactive prospectivity map"></div>
+
+      <aside class="zone-detail" aria-label="Selected zone details">
+        <p class="panel-label">Selected Zone</p>
+        <h3 id="detail-zone-id">Choose a zone</h3>
+        <dl class="detail-list">
+          <dt>Coordinates</dt>
+          <dd id="detail-coordinates">-</dd>
+          <dt>Confidence</dt>
+          <dd id="detail-confidence">-</dd>
+          <dt>Satellite Date</dt>
+          <dd id="detail-date">-</dd>
+          <dt>Status</dt>
+          <dd id="detail-status">-</dd>
+        </dl>
+
+        <p class="panel-label detail-drivers-label">Top Drivers</p>
+        <ul id="detail-drivers" class="driver-list">
+          <li>No zone selected</li>
+        </ul>
+      </aside>
+    </div>
+
+    <div class="alert-log">
+      <div class="section-header compact">
+        <div>
+          <p class="panel-label">Alert Log</p>
+          <h2>Zones Above Threshold</h2>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Zone</th>
+            <th>Confidence</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="alert-log-body"></tbody>
+      </table>
+    </div>
+
+    <div class="zone-log">
+      <div class="section-header compact">
+        <div>
+          <p class="panel-label">Zone Log</p>
+          <h2>Highest Confidence Zones</h2>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Zone</th>
+            <th>Confidence</th>
+            <th>Class</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+          </tr>
+        </thead>
+        <tbody id="zone-log-body"></tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+{% endblock %}
