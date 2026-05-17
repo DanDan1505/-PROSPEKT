@@ -123,6 +123,14 @@ h1 {
   line-height: 1.05;
 }
 
+.map-disclaimer {
+  max-width: 680px;
+  margin: 8px 0 0;
+  color: #68736a;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;
